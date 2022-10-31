@@ -152,8 +152,8 @@ static const char * NTV2NubQueryRespStrProtVer3 [eNumNTV2NubPktTypes] =
 	"GetBIR"
 };
 
-#if defined (AJALinux) 
-	unsigned long long ntohll(unsigned long long n) 
+#if !defined (AJAMac) || !defined (ntohll)
+unsigned long long ntohll(unsigned long long n)
 	{
 	#if __BYTE_ORDER == __BIG_ENDIAN
 		return n;
@@ -163,8 +163,8 @@ static const char * NTV2NubQueryRespStrProtVer3 [eNumNTV2NubPktTypes] =
 	}
 #endif
 
-#if defined (AJALinux) 
-	unsigned long long htonll(unsigned long long n) 
+#if !defined (AJAMac) || !defined (ntohll)
+unsigned long long htonll(unsigned long long n)
 	{
 	#if __BYTE_ORDER == __BIG_ENDIAN
 		return n;
@@ -190,7 +190,7 @@ const char * nubQueryRespStr (NTV2NubProtocolVersion	protocolVersion,  NTV2NubPk
 
 		case ntv2NubProtocolVersion3:
 		default:// No response table available, use newest one.
-				// This can happen in the case of an open when 
+				// This can happen in the case of an open when
 				// the protcol version is being negotiated.
 			queryRespStr = NTV2NubQueryRespStrProtVer3[pktType];
 			break;
@@ -228,7 +228,7 @@ NTV2NubPkt * BuildNubBasePacket (NTV2NubProtocolVersion protocolVersion,
 		else if (pktType == eNubV2ControlAutoCirculateRespPkt)
 			adjustedPktType = eNubV1ControlAutoCirculateRespPkt;
 	}
-	
+
 	// Start with length of response string, add payload
 	ULWord dataSize (ULWord(::strlen(queryRespStr)) + 1 + payloadSize);
 	if (dataSize > NTV2_NUBPKT_MAX_DATASIZE)
@@ -239,7 +239,7 @@ NTV2NubPkt * BuildNubBasePacket (NTV2NubProtocolVersion protocolVersion,
 		return AJA_NULL;
 	::memset(pPkt, 0, sizeof(NTV2NubPkt));
 
-	pPkt->hdr.protocolVersion	= protocolVersion; 
+	pPkt->hdr.protocolVersion	= protocolVersion;
 	pPkt->hdr.pktType			= adjustedPktType;
 	pPkt->hdr.dataLength		= dataSize;
 
@@ -267,7 +267,7 @@ bool NBOifyNTV2NubPkt (NTV2NubPkt * pPkt)
 // Put packet header in host byte order
 bool deNBOifyNTV2NubPkt (NTV2NubPkt * pPkt, ULWord size)
 {
-	if (!pPkt || size < sizeof(NTV2NubPktHeader)) 
+	if (!pPkt || size < sizeof(NTV2NubPktHeader))
 		return false;
 	pPkt->hdr.protocolVersion	= ntohl(pPkt->hdr.protocolVersion);
 	pPkt->hdr.pktType			= NTV2NubPktType(ntohl(pPkt->hdr.pktType));
@@ -291,7 +291,7 @@ int sendall (AJASocket s, char * buf, int * len)
 	}
 	*len = total; // return number actually sent here
 	return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
-} 
+}
 
 
 int recvtimeout_sec (AJASocket s, char * buf, int len, int timeout)
@@ -376,8 +376,8 @@ void dumpBoardInventory (NTV2DiscoverRespPayload * boardInventory)
 	for (ULWord boardNum = 0; boardNum < boardInventory->numBoards; boardNum++)
 	{
 		NTV2DiscoverBoardInfo *dbi = &boardInventory->discoverBoardInfo[boardNum];
-		printf("Board[%d]: boardNumber = %d, boardType = %d, boardID = 0x%08X", 
-				boardNum, 
+		printf("Board[%d]: boardNumber = %d, boardType = %d, boardID = 0x%08X",
+				boardNum,
 				dbi->boardNumber,
 				dbi->boardType,
 				dbi->boardID);
@@ -426,7 +426,7 @@ bool isNTV2NubPacketType (NTV2NubPkt * pPkt, NTV2NubPktType nubPktType)
 					&&	!::strncmp(reinterpret_cast<const char*>(pPkt->data), NTV2NubQueryRespStrProtVer2[nubPktType], pPkt->hdr.dataLength);
 
 		case ntv2NubProtocolVersion3:
-		default:	
+		default:
 			return pPkt->hdr.pktType == nubPktType
 					&&	!::strncmp(reinterpret_cast<const char*>(pPkt->data), NTV2NubQueryRespStrProtVer3[nubPktType], pPkt->hdr.dataLength);
 	}
