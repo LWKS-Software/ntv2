@@ -3,7 +3,7 @@
 	@file		ajatypes.h
 	@brief		Declares the most fundamental data types used by NTV2. Since Windows NT was the first principal
 				development platform, many typedefs are Windows-centric.
-	@copyright	(C) 2004-2021 AJA Video Systems, Inc.  
+	@copyright	(C) 2004-2021 AJA Video Systems, Inc.
 **/
 #ifndef AJATYPES_H
 #define AJATYPES_H
@@ -212,7 +212,11 @@
 	#define NTV2_CPP_MIN(__x__,__y__)		std::min((__x__),(__y__))
 	#define NTV2_CPP_MAX(__x__,__y__)		std::max((__x__),(__y__))
 
-	#define MAX_PATH 4096
+   #ifdef MAX_PATH
+      #undef MAX_PATH
+   #endif
+
+   #define MAX_PATH 4096
 
 	#define INVALID_HANDLE_VALUE (0)
 
@@ -370,7 +374,13 @@
 	#endif
 	#define WINAPI
 	#define POINTER_32
-	#define MAX_PATH	4096
+
+   #ifdef MAX_PATH
+      #undef MAX_PATH
+   #endif
+
+   #define MAX_PATH 4096
+
 										//////////////////////////////////////////////////////////////////
 #else									////////////////////////	(OTHER)		//////////////////////////
 										//////////////////////////////////////////////////////////////////
